@@ -8,7 +8,7 @@ docker-compose up -d --build
 ```
 2. Run database migrations
 ```bash
-docker exec comments-engine-backend poetry run alembic upgrade head
+docker exec users-service poetry run alembic upgrade head
 ```
 3. Run the tests
 ```bash
@@ -17,5 +17,5 @@ poetry run make tests
 4. Check the API docs on http://localhost:8001/docs
 
 ## Other stuff
-docker exec comments-engine-backend poetry run alembic revision --autogenerate
-docker exec comments-engine-backend poetry run alembic upgrade head
+docker exec users-service poetry run alembic revision --autogenerate
+docker exec users-service poetry run alembic upgrade head
