@@ -14,11 +14,11 @@ class FakeUserRepository(UserRepository):
     registry:Dict[int, User] = field(default_factory=dict)
 
     async def add(self, user:User):
-        self.registry[hash(user)] = user
+        self.registry[hash(user.id)] = user
 
     async def get(self, id:UUID) -> Optional[User]:
         try:
-            user = [user for user in self.registry.values() if user.id == id][0]
-        except IndexError:
+            user = self.registry[hash(id)]
+        except KeyError:
             user = None
         return user
