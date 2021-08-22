@@ -58,4 +58,5 @@ services:
       - ./users:/application
     depends_on:
       - postgres
+      - kafka
     container_name: users-service
