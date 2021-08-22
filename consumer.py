@@ -1,18 +1,23 @@
-from aiokafka import AIOKafkaConsumer
 import asyncio
+from uuid import UUID
+
+from aiokafka import AIOKafkaConsumer
 
 async def consume():
     consumer = AIOKafkaConsumer(
-        'test-topic',
+        'other-topic',
         bootstrap_servers='localhost:9092',
-        group_id="test-group")
+        group_id="other-group",
+        enable_auto_commit=False,
+        isolation_level="read_committed"
+    )
     # Get cluster layout and join group `my-group`
     await consumer.start()
     try:
-        # Consume messages
-        async for msg in consumer:
-            print("consumed: ", msg.topic, msg.partition, msg.offset,
-                  msg.key, msg.value, msg.timestamp)
+        batch = await consumer.getmany(timeout_ms=100)
+        for tp, messages in batch.items():
+            print([(UUID(bytes=m.key) if m.key else None, m.value) for m in messages])
+        await consumer.commit()
     finally:
         # Will leave consumer group; perform autocommit if enabled.
         await consumer.stop()
