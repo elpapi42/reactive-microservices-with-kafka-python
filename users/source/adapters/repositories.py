@@ -3,7 +3,7 @@ from typing import Dict, Optional
 from dataclasses import dataclass, field
 
 from source.infrastructure.databases import postgres_database
-#from source.infrastructure.tables import users_table
+from source.infrastructure.tables import users_table
 from source.domain.entities import User
 from source.ports.repositories import UserRepository
 
@@ -22,3 +22,29 @@ class FakeUserRepository(UserRepository):
         except KeyError:
             user = None
         return user
+
+@dataclass
+class PostgresUserRepository(UserRepository):
+
+    async def add(self, user:User):
+        query = users_table.insert().values(
+            id=user.id,
+            email=user.email,
+            nickname=user.nickname
+        )
+
+        await postgres_database.execute(query)
+
+    async def get(self, id:UUID) -> Optional[User]:
+        query = users_table.select().where(users_table.c.id == id)
+
+        user = await postgres_database.fetch_one(query, values={})
+
+        if user is None:
+            return None
+
+        return User(
+            id=user['id'],
+            email=user['email'],
+            nickname=user['nickname']
+        )

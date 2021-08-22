@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from fastapi import APIRouter
 from pydantic.networks import EmailStr
 
-from source.adapters.repositories import FakeUserRepository
+from source.adapters.repositories import FakeUserRepository, PostgresUserRepository
 from source.application.register_user import RegisterUserService
 
 
@@ -22,7 +22,7 @@ class UserSchemaOut(BaseModel):
 
 @router.post('/users', status_code=201, response_model=UserSchemaOut)
 async def register_user(data:UserSchemaIn):
-    repo = FakeUserRepository()
+    repo = PostgresUserRepository()
     service = RegisterUserService(repo)
 
     user = await service.execute(**data.dict())
