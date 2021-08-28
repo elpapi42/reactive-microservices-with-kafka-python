@@ -27,9 +27,13 @@ class KafkaSubscriber():
     def __post_init__(self):
         self.stopped = False
         self.task = None
+        self.topics = []
 
     async def start(self):
         await self.consumer.start()
+
+        self.topics = list(await self.consumer.topics())
+        logger.info(f'Kafka: Subscriber to topics {self.topics} started')
 
     async def stop(self):
         self.stopped = True
@@ -38,6 +42,8 @@ class KafkaSubscriber():
             await self.task
 
         await self.consumer.stop()
+
+        logger.info(f'Kafka: Subscriber to topics {self.topics} stopped')
 
     async def consume(self):
         while not self.stopped:
@@ -68,6 +74,7 @@ class KafkaSubscriber():
 
     def subscribe(self):
         self.task = asyncio.create_task(self.consume())
+        logger.info(f'Kafka: Subscriber to topics {self.topics} subscribed with callback {self.callback.__name__}')
 
     def record_to_dict(self, record) -> Dict:
         output = asdict(record)
