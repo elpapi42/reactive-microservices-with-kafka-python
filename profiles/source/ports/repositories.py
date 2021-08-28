@@ -1,13 +1,13 @@
 import abc
 from uuid import UUID
-from typing import Optional, List
+from typing import Optional
 
 from source.domain.entities import Profile
 
 
 class ProfileRepository(abc.ABC):
     @abc.abstractmethod
-    async def add_many(self, profiles:List[Profile]):
+    async def add(self, profile:Profile):
         raise NotImplementedError()
 
     @abc.abstractmethod
