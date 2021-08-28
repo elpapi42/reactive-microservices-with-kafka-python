@@ -11,16 +11,14 @@ from source.infrastructure.loggers import default as logger
 @dataclass
 class KafkaSubscriber():
     """
-    Allows to consume messages and
-    pass them in batches to a callback.
+    Allows to consume messages and pass them in batches to a callback.
 
-    The continous consume of messages
-    is managed by a backgroud task that
-    executes on the default event loop.
+    The continous consume of messages is managed by a
+    backgroud task that executes on the default event loop.
 
     The callback must be a coroutine.
-    The callback must accept a list of dicts,
-    each dict representing a message.
+
+    The callback must accept a list of dicts, each dict representing a message.
     """
     consumer:AIOKafkaConsumer
     callback:Callable[[List[Dict]], None]

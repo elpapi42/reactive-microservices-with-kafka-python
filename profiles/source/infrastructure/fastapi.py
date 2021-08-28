@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-#from source.infrastructure.kafka import subscriber
+from source.adapters.subscribers import create_profile_subscriber
 #from source.adapters.controllers import router
 
 
@@ -10,11 +10,9 @@ app = FastAPI()
 
 @app.on_event('startup')
 async def startup():
-    #await subscriber.start()
-    #subscriber.subscribe()
-    pass
+    await create_profile_subscriber.start()
+    create_profile_subscriber.subscribe()
 
 @app.on_event('shutdown')
 async def shutdown():
-    #await subscriber.stop()
-    pass
+    await create_profile_subscriber.stop()
