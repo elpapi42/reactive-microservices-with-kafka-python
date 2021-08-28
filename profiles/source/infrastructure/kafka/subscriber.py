@@ -46,29 +46,44 @@ class KafkaSubscriber():
         logger.info(f'Kafka: Subscriber to topics {self.topics} stopped')
 
     async def consume(self):
+        failed_messages = None
+
         while not self.stopped:
-            batch = await self.consumer.getmany(
-                timeout_ms=100,
-                max_records=100
-            )
+            # if not failed messaged pending, fetch batch
+            if not failed_messages:
+                batch = await self.consumer.getmany(
+                    timeout_ms=100,
+                    max_records=100
+                )
 
-            # Concat the messages coming from each topic-partition.
-            batch = list(chain(*[b for _, b in batch.items()]))
+                # Concat the messages coming from each topic-partition.
+                batch = list(chain(*[b for _, b in batch.items()]))
 
-            # ConsumerRecord to dict
-            messages = [self.record_to_dict(record) for record in batch]
+                # ConsumerRecord to dict
+                messages = [self.record_to_dict(record) for record in batch]
+            else:
+                messages = failed_messages
 
+            # Reduces overhead when no
+            # messages are received.
             if len(messages) == 0:
-                # This sleep reduces overhead
-                # when no messages are received.
                 await asyncio.sleep(1)
-
-                # Skip iteration
                 continue
 
-            await self.callback(messages)
+            # If the callback raises an exception,
+            # it will be caught here and the messages
+            # will be retried using failed_messages.
+            try:
+                await self.callback(messages)
+            except Exception as e:
+                logger.error(f'Kafka: Error processing batch {e}')
+                failed_messages = messages
+                await asyncio.sleep(1)
+                continue
 
             await self.consumer.commit()
+
+            failed_messages = None
 
             logger.info(f'Kafka: {len(messages)} messages commited')
 

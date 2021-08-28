@@ -1,16 +1,18 @@
+import asyncio
+from logging import log
 from uuid import UUID
 from typing import List, Dict
 
+from source.infrastructure.loggers import default as logger
 from source.infrastructure.kafka.subscriber import KafkaSubscriber
 from source.infrastructure.kafka.consumers import users_consumer
-from source.infrastructure.loggers import default as logger
-from source.application.create_profiles_batch import CreateProfilesBatchService
+from source.application.create_profile import CreateProfileService
 from source.adapters.repositories import fake_profile_repository
 
 
 async def create_profiles_batch(messages:List[Dict]):
     repo = fake_profile_repository
-    service = CreateProfilesBatchService(repo)
+    service = CreateProfileService(repo)
 
     user_ids = [
         UUID(m['value']['id'])
@@ -18,6 +20,6 @@ async def create_profiles_batch(messages:List[Dict]):
         if m['headers'].get('event_type') == 'UserRegistered'
     ]
 
-    await service.execute(user_ids)
+    await asyncio.gather(*[service.execute(user_id) for user_id in user_ids])
 
 create_profile_subscriber = KafkaSubscriber(users_consumer, create_profiles_batch)

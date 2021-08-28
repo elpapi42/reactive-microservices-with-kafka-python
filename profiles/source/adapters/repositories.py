@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 from dataclasses import dataclass, field
 
 from source.domain.entities import Profile
@@ -11,9 +11,8 @@ class FakeProfileRepository(ProfileRepository):
 
     registry:Dict[UUID, Profile] = field(default_factory=dict)
 
-    async def add_many(self, profiles:List[Profile]):
-        for profile in profiles:
-            self.registry[profile.id] = profile
+    async def add(self, profile:Profile):
+        self.registry[profile.id] = profile
 
     async def get_by_user_id(self, user_id:UUID) -> Optional[Profile]:
         return self.registry.get(user_id)
