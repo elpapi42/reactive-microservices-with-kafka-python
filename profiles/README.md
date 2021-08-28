@@ -17,5 +17,5 @@ poetry run make tests
 4. Check the API docs on http://localhost:8001/docs
 
 ## Other stuff
-docker exec users-service poetry run alembic revision --autogenerate
-docker exec users-service poetry run alembic upgrade head
+docker exec profiles-service poetry run alembic revision --autogenerate
+docker exec profiles-service poetry run alembic upgrade head
