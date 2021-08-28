@@ -9,5 +9,5 @@ class KafkaUserRegisteredEvent(UserRegisteredEvent):
                 topic='users',
                 value=user.json().encode(),
                 key=str(user.id).encode(),
-                headers=[('event_type', 'KafkaUserRegistered'.encode())]
+                headers=[('event_type', 'UserRegistered'.encode())]
             )
