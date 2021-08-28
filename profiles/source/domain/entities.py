@@ -8,7 +8,7 @@ from source.domain.enums import Gender
 
 class Profile(BaseModel):
     id:UUID = Field(default_factory=uuid4)
-    owner:UUID
+    user_id:UUID
     bio:Optional[str] = None
     age:Optional[int] = None
     gender:Optional[Gender] = None
