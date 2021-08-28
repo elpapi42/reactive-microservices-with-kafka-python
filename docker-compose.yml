@@ -60,3 +60,16 @@ services:
       - postgres
       - kafka
     container_name: users-service
+
+  profiles-service:
+    build: ./profiles
+    image: profiles-service
+    command: poetry run make start-development
+    ports:
+      - 8002:8000
+    volumes:
+      - ./profiles:/application
+    depends_on:
+      - postgres
+      - kafka
+    container_name: profiles-service

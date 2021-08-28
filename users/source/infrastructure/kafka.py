@@ -1,5 +1,3 @@
-import os
-
 from aiokafka import AIOKafkaProducer
 
 from source.infrastructure.settings import application_settings
