@@ -1,3 +1,4 @@
+import json
 import asyncio
 from itertools import chain
 from dataclasses import dataclass, asdict
@@ -48,10 +49,10 @@ class KafkaSubscriber():
             # Concat the messages coming from each topic-partition.
             batch = list(chain(*[b for _, b in batch.items()]))
 
-            # ConsumerRecord to dict.
-            batch = [asdict(m) for m in batch]
+            # ConsumerRecord to dict
+            messages = [self.record_to_dict(record) for record in batch]
 
-            if len(batch) == 0:
+            if len(messages) == 0:
                 # This sleep reduces overhead
                 # when no messages are received.
                 await asyncio.sleep(1)
@@ -59,11 +60,24 @@ class KafkaSubscriber():
                 # Skip iteration
                 continue
 
-            await self.callback(batch)
+            await self.callback(messages)
 
             await self.consumer.commit()
 
-            logger.info(f'Kafka: {len(batch)} messages commited')
+            logger.info(f'Kafka: {len(messages)} messages commited')
 
     def subscribe(self):
         self.task = asyncio.create_task(self.consume())
+
+    def record_to_dict(self, record) -> Dict:
+        output = asdict(record)
+
+        output['headers'] = { 
+            k:v.decode()
+            for k, v
+            in output['headers']
+        }
+        output['key'] = output['key'].decode()
+        output['value'] = json.loads(output['value'].decode())
+
+        return output

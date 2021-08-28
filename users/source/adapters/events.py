@@ -8,5 +8,6 @@ class KafkaUserRegisteredEvent(UserRegisteredEvent):
             await producer.send_and_wait(
                 topic='users',
                 value=user.json().encode(),
-                key=str(user.id).encode()
+                key=str(user.id).encode(),
+                headers=[('event_type', 'KafkaUserRegistered'.encode())]
             )
