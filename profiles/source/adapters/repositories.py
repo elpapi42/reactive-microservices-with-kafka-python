@@ -18,7 +18,7 @@ class FakeProfileRepository(ProfileRepository):
     registry:Dict[UUID, Profile] = field(default_factory=dict)
 
     async def add(self, profile:Profile):
-        self.registry[profile.id] = profile
+        self.registry[profile.user_id] = profile
 
     async def get_by_user_id(self, user_id:UUID) -> Optional[Profile]:
         return self.registry.get(user_id)
@@ -52,7 +52,6 @@ class PostgresProfileRepository(ProfileRepository):
             return None
         
         return Profile(
-            id=profile.id,
             user_id=profile.user_id,
             bio=profile.bio,
             age=profile.age,

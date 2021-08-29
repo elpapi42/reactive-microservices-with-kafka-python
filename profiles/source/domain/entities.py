@@ -1,13 +1,12 @@
-from uuid import uuid4, UUID
+from uuid import UUID
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from source.domain.enums import Gender
 
 
 class Profile(BaseModel):
-    id:UUID = Field(default_factory=uuid4)
     user_id:UUID
     bio:Optional[str] = None
     age:Optional[int] = None

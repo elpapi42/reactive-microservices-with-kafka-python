@@ -10,7 +10,6 @@ from source.ports.repositories import ProfileRepository
 from source.infrastructure.loggers import default as logger
 
 class CreateProfileOutputDTO(BaseModel):
-    id:UUID
     user_id:UUID
     bio:Optional[str]
     age:Optional[int]

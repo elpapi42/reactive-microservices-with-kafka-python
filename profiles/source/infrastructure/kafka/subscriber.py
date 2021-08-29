@@ -77,7 +77,7 @@ class KafkaSubscriber():
             try:
                 await self.callback(messages)
             except Exception as e:
-                logger.error(f'Kafka: Error processing batch: {e}')
+                logger.error(f'Kafka: Error processing batch: {e}') # TODO: log traceback
                 failed_messages = messages
                 await asyncio.sleep(1)
                 continue
