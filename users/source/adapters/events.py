@@ -4,10 +4,9 @@ from source.ports.events import UserRegisteredEvent
 
 class KafkaUserRegisteredEvent(UserRegisteredEvent):
     async def trigger(self, user:User):
-        async with producer.transaction():
-            await producer.send_and_wait(
-                topic='users',
-                value=user.json().encode(),
-                key=str(user.id).encode(),
-                headers=[('event_type', 'UserRegistered'.encode())]
-            )
+        await producer.send(
+            topic='users',
+            value=user.json().encode(),
+            key=str(user.id).encode(),
+            headers=[('event_type', 'UserRegistered'.encode())]
+        )

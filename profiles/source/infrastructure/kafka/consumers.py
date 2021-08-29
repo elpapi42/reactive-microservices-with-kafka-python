@@ -7,6 +7,5 @@ users_consumer = AIOKafkaConsumer(
     'users',
     bootstrap_servers=application_settings.kafka_url,
     group_id='profiles-service',
-    enable_auto_commit=False,
-    isolation_level='read_committed'
+    enable_auto_commit=False
 )

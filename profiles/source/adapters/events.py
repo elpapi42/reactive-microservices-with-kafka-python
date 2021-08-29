@@ -5,20 +5,18 @@ from source.ports.events import ProfileCreatedEvent, ProfileUpdatedEvent
 
 class KafkaProfileCreatedEvent(ProfileCreatedEvent):
     async def trigger(self, profile:Profile):
-        async with producer.transaction():
-            await producer.send_and_wait(
-                topic='users',
-                value=profile.json().encode(),
-                key=str(profile.user_id).encode(),
-                headers=[('event_type', 'ProfileCreated'.encode())]
-            )
+        await producer.send_and_wait(
+            topic='users',
+            value=profile.json().encode(),
+            key=str(profile.user_id).encode(),
+            headers=[('event_type', 'ProfileCreated'.encode())]
+        )
 
 class KafkaProfileUpdatedEvent(ProfileUpdatedEvent):
     async def trigger(self, profile:Profile):
-        async with producer.transaction():
-            await producer.send_and_wait(
-                topic='users',
-                value=profile.json().encode(),
-                key=str(profile.user_id).encode(),
-                headers=[('event_type', 'ProfileUpdated'.encode())]
-            )
+        await producer.send_and_wait(
+            topic='users',
+            value=profile.json().encode(),
+            key=str(profile.user_id).encode(),
+            headers=[('event_type', 'ProfileUpdated'.encode())]
+        )
