@@ -1,9 +1,9 @@
 from pydantic import BaseSettings
-from pydantic.networks import PostgresDsn
 
 
 class ApplicationSettings(BaseSettings):
-    postgres_url:PostgresDsn
+    postgres_url:str
+    postgres_migrations_url:str
     kafka_url:str
 
     class Config:

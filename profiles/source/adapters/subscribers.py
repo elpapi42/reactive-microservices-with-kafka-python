@@ -7,11 +7,11 @@ from source.infrastructure.loggers import default as logger
 from source.infrastructure.kafka.subscriber import KafkaSubscriber
 from source.infrastructure.kafka.consumers import users_consumer
 from source.application.create_profile import CreateProfileService
-from source.adapters.repositories import fake_profile_repository
+from source.adapters.repositories import PostgresProfileRepository
 
 
 async def create_profiles_batch(messages:List[Dict]):
-    repo = fake_profile_repository
+    repo = PostgresProfileRepository()
     service = CreateProfileService(repo)
 
     user_ids = [

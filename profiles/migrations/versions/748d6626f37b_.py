@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 39861315c5ba
+Revision ID: 748d6626f37b
 Revises: 
-Create Date: 2021-08-28 23:35:23.383894
+Create Date: 2021-08-29 01:11:04.117986
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision = '39861315c5ba'
+revision = '748d6626f37b'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -25,7 +25,8 @@ def upgrade():
     sa.Column('bio', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('age', sa.Integer(), nullable=True),
     sa.Column('gender', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('user_id')
     )
     op.create_index(op.f('ix_profiles_id'), 'profiles', ['id'], unique=False)
     op.create_index(op.f('ix_profiles_user_id'), 'profiles', ['user_id'], unique=False)

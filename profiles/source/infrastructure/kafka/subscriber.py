@@ -1,5 +1,6 @@
 import json
 import asyncio
+import traceback
 from itertools import chain
 from dataclasses import dataclass, asdict
 from typing import Callable, Dict, List
@@ -76,7 +77,7 @@ class KafkaSubscriber():
             try:
                 await self.callback(messages)
             except Exception as e:
-                logger.error(f'Kafka: Error processing batch {e}')
+                logger.error(f'Kafka: Error processing batch: {e}')
                 failed_messages = messages
                 await asyncio.sleep(1)
                 continue

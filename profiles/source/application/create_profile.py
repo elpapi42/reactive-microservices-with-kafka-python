@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from source.domain.entities import Profile
 from source.domain.enums import Gender
 from source.ports.repositories import ProfileRepository
+from source.infrastructure.loggers import default as logger
 
 class CreateProfileOutputDTO(BaseModel):
     id:UUID
@@ -23,8 +24,11 @@ class CreateProfileService():
         self,
         user_id:UUID
     ) -> List[CreateProfileOutputDTO]:
-        profile = Profile(user_id=user_id)
+        profile = await self.repo.get_by_user_id(user_id)
 
-        await self.repo.add(profile)
+        if not profile:
+            profile = Profile(user_id=user_id)
+
+            await self.repo.add(profile)
 
         return CreateProfileOutputDTO(**profile.dict())

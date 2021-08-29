@@ -13,7 +13,7 @@ from sqlmodel import SQLModel
 # access to the values within the .ini file in use.
 config = context.config
 
-config.set_main_option('sqlalchemy.url', str(application_settings.postgres_url))
+config.set_main_option('sqlalchemy.url', str(application_settings.postgres_migrations_url))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
