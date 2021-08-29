@@ -1,13 +1,14 @@
 from fastapi import FastAPI
 
+from source.infrastructure.sqlalchemy import engine
 from source.adapters.subscribers import create_profile_subscriber
 from source.infrastructure.kafka.producers import producer
-#from source.adapters.controllers import router
+from source.adapters.controllers import router
 
 
 app = FastAPI()
 
-#app.include_router(router)
+app.include_router(router)
 
 @app.on_event('startup')
 async def startup():
@@ -19,3 +20,4 @@ async def startup():
 async def shutdown():
     await create_profile_subscriber.stop()
     await producer.stop()
+    await engine.dispose()

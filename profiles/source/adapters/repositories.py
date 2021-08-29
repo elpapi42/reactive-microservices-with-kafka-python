@@ -8,7 +8,6 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from source.domain.entities import Profile
 from source.ports.repositories import ProfileRepository
 from source.infrastructure.tables import ProfileModel
-from source.infrastructure.sqlalchemy import engine
 from source.infrastructure.loggers import default as logger
 
 
@@ -27,30 +26,38 @@ fake_profile_repository = FakeProfileRepository()
 
 @dataclass
 class PostgresProfileRepository(ProfileRepository):
+    session:AsyncSession
+
+    def __post_init__(self):
+        # TODO: This local registry is hack, for upserts
+        # sqlalchemy requires keep track of extracted
+        # records from db, that is difficult with repo
+        # pattern, so we need to keep track of them here,
+        # there must be a better way
+        self.registry:Dict[UUID, ProfileModel] = {}
 
     async def add(self, profile:Profile):
-        profile_model = ProfileModel(**profile.dict())
+        profile_model = self.registry.get(profile.user_id)
 
-        session = AsyncSession(engine) #TODO: Inject session from outside
+        if profile_model:
+            profile_model.bio = profile.bio
+            profile_model.age = profile.age
+            profile_model.gender = profile.gender
+        else:
+            profile_model = ProfileModel(**profile.dict())
 
-        session.add(profile_model)
-
-        await session.commit()
-
-        await session.close()
+        self.session.add(profile_model)
 
     async def get_by_user_id(self, user_id:UUID) -> Optional[Profile]:
         query = select(ProfileModel).where(ProfileModel.user_id == user_id)
 
-        session = AsyncSession(engine) #TODO: Inject session from outside
-
-        profile = (await session.exec(query)).first()
-
-        await session.close()
+        profile = (await self.session.exec(query)).first()
 
         if not profile:
             return None
-        
+
+        self.registry[user_id] = profile
+
         return Profile(
             user_id=profile.user_id,
             bio=profile.bio,
