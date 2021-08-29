@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from source.domain.entities import Profile
 from source.domain.enums import Gender
 from source.ports.repositories import ProfileRepository
+from source.ports.events import ProfileCreatedEvent
 from source.infrastructure.loggers import default as logger
 
 class CreateProfileOutputDTO(BaseModel):
@@ -18,6 +19,7 @@ class CreateProfileOutputDTO(BaseModel):
 @dataclass
 class CreateProfileService():
     repo:ProfileRepository
+    profile_created_event:ProfileCreatedEvent
 
     async def execute(
         self,
@@ -29,5 +31,7 @@ class CreateProfileService():
             profile = Profile(user_id=user_id)
 
             await self.repo.add(profile)
+
+            await self.profile_created_event.trigger(profile)
 
         return CreateProfileOutputDTO(**profile.dict())
