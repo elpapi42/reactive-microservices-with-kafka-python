@@ -9,6 +9,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from source.adapters.repositories import PostgresProfileRepository
 from source.adapters.events import KafkaProfileUpdatedEvent
 from source.application.update_profile import UpdateProfileService
+from source.application.retrieve_profile import RetrieveProfileService
 from source.infrastructure.sqlalchemy import engine
 
 
@@ -19,18 +20,19 @@ class Gender(str, Enum):
     FEMALE = 'female'
     OTHER = 'other'
 
-class UpdateProfileSchemaIn(BaseModel):
-    bio:Optional[str]
-    age:Optional[int]
-    gender:Optional[Gender]
-
-class UpdateProfileSchemaOut(BaseModel):
+class ProfileSchemaOut(BaseModel):
     user_id:UUID
     bio:Optional[str]
     age:Optional[int]
     gender:Optional[Gender]
 
-@router.patch('/profiles/{user_id}', status_code=200, response_model=UpdateProfileSchemaOut)
+
+class UpdateProfileSchemaIn(BaseModel):
+    bio:Optional[str]
+    age:Optional[int]
+    gender:Optional[Gender]
+
+@router.patch('/profiles/{user_id}', status_code=200, response_model=ProfileSchemaOut)
 async def update_profile(user_id:UUID, data:UpdateProfileSchemaIn):
     session = AsyncSession(engine)
     repo = PostgresProfileRepository(session)
@@ -46,4 +48,15 @@ async def update_profile(user_id:UUID, data:UpdateProfileSchemaIn):
     await session.commit()
     await session.close()
 
-    return UpdateProfileSchemaOut(**updated_profile.dict())
+    return ProfileSchemaOut(**updated_profile.dict())
+
+
+@router.get('/profiles/{user_id}', status_code=200, response_model=ProfileSchemaOut)
+async def retrieve_profile(user_id:UUID):
+    session = AsyncSession(engine)
+    repo = PostgresProfileRepository(session)
+    service = RetrieveProfileService(repo)
+
+    profile = await service.execute(user_id)
+
+    return ProfileSchemaOut(**profile.dict())

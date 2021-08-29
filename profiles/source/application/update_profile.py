@@ -1,22 +1,13 @@
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 from dataclasses import dataclass
 
-from pydantic import BaseModel
-
-from source.domain.entities import Profile
 from source.domain.enums import Gender
 from source.ports.repositories import ProfileRepository
 from source.ports.events import ProfileUpdatedEvent
 from source.application.errors import NotFoundError
-from source.infrastructure.loggers import default as logger
+from source.application.dtos import ProfileOutputDTO
 
-
-class UpdateProfileOutputDTO(BaseModel):
-    user_id:UUID
-    bio:Optional[str]
-    age:Optional[int]
-    gender:Optional[Gender]
 
 @dataclass
 class UpdateProfileService():
@@ -29,7 +20,7 @@ class UpdateProfileService():
         bio:Optional[str]=None,
         age:Optional[int]=None,
         gender:Optional[Gender]=None
-    ) -> UpdateProfileOutputDTO:
+    ) -> ProfileOutputDTO:
         profile = await self.repo.get_by_user_id(user_id)
 
         if not profile:
@@ -46,4 +37,4 @@ class UpdateProfileService():
 
         await self.profile_updated_event.trigger(profile)
 
-        return UpdateProfileOutputDTO(**profile.dict())
+        return ProfileOutputDTO(**profile.dict())
