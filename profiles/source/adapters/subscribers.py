@@ -17,23 +17,27 @@ from source.infrastructure.sqlalchemy import engine
 
 async def create_profiles_batch(messages:List[Dict]):
     session = AsyncSession(engine)
-    repo = PostgresProfileRepository(session)
-    profile_created_event = KafkaProfileCreatedEvent()
-    service = CreateProfileService(repo, profile_created_event)
 
-    user_ids = [
-        UUID(m['value']['id'])
-        for m in messages
-        if m['headers'].get('event_type') == 'UserRegistered'
-    ]
+    try:
+        repo = PostgresProfileRepository(session)
+        profile_created_event = KafkaProfileCreatedEvent()
+        service = CreateProfileService(repo, profile_created_event)
 
-    await asyncio.gather(*[service.execute(user_id) for user_id in user_ids])
+        user_ids = [
+            UUID(m['value']['id'])
+            for m in messages
+            if m['headers'].get('event_type') == 'UserRegistered'
+        ]
 
-    # This commits and closes the session.
-    # Ideally this is responsability of the UoW,
-    # but we have no UoW here so lets accept
-    # this hack for now.
-    await session.commit()
-    await session.close()
+        await asyncio.gather(*[service.execute(user_id) for user_id in user_ids])
+    except Exception as e:
+        logger.error(f'Exception raised vtw {e}')
+    finally:
+        # This commits and closes the session.
+        # Ideally this is responsability of the UoW,
+        # but we have no UoW here so lets accept
+        # this hack for now.
+        await session.commit()
+        await session.close()
 
 create_profile_subscriber = KafkaSubscriber(users_consumer, create_profiles_batch)

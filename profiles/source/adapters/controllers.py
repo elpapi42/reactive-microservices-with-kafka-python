@@ -3,9 +3,10 @@ from enum import Enum
 from uuid import UUID
 
 from pydantic import BaseModel
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from source.application.errors import NotFoundError
 from source.adapters.repositories import PostgresProfileRepository
 from source.adapters.events import KafkaProfileUpdatedEvent
 from source.application.update_profile import UpdateProfileService
@@ -39,7 +40,10 @@ async def update_profile(user_id:UUID, data:UpdateProfileSchemaIn):
     user_updated_event = KafkaProfileUpdatedEvent()
     service = UpdateProfileService(repo, user_updated_event)
 
-    updated_profile = await service.execute(user_id, **data.dict())
+    try:
+        updated_profile = await service.execute(user_id, **data.dict())
+    except NotFoundError:
+        raise HTTPException(status_code=404, detail="Profile not found")
 
     # This commits and closes the session.
     # Ideally this is responsability of the UoW,
@@ -57,6 +61,9 @@ async def retrieve_profile(user_id:UUID):
     repo = PostgresProfileRepository(session)
     service = RetrieveProfileService(repo)
 
-    profile = await service.execute(user_id)
+    try:
+        profile = await service.execute(user_id)
+    except NotFoundError:
+        raise HTTPException(status_code=404, detail="Profile not found")
 
     return ProfileSchemaOut(**profile.dict())
